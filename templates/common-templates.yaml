@@ -1,0 +1,14 @@
+apiVersion: instancetype.kubevirt.io/v1beta1
+kind: VirtualMachineInstancetype
+metadata:
+  name: "u1.2xlarge"
+  labels:
+    instancetype.kubevirt.io/cpu: "2"
+    instancetype.kubevirt.io/memory: "2Gi"
+spec:
+  cpu:
+    guest: 2
+  memory:
+    guest: "2Gi"
+---
+

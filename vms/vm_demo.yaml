@@ -1,0 +1,66 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: alpine-vm
+spec:
+  running: true
+  instancetype:
+    kind: VirtualMachineInstancetype
+    name: u1.2xlarge
+  preference:
+    kind: VirtualMachinePreference
+    name: alpine
+  dataVolumeTemplates:
+    - metadata:
+        name: alpine-dv
+      spec:
+        pvc:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 50Gi
+        source:
+          http:
+            url: "https://cloud-images.ubuntu.com/jammy/20240514/jammy-server-cloudimg-amd64-disk-kvm.img"
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: alpine-vm
+    spec:
+      domain:
+        devices:
+          disks:
+            - name: datavolumedisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - masquerade: {}
+              name: default
+      networks:
+        - name: default
+          pod: {}
+      livenessProbe:
+        initialDelaySeconds: 300
+        periodSeconds: 20
+        httpGet:
+          port: 80
+        timeoutSeconds: 10
+      volumes:
+        - persistentVolumeClaim:
+            claimName: alpine-dv
+          name: datavolumedisk
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              hostname: vm_demo
+              ssh_pwauth: True
+              disable_root: false
+              ssh_authorized_keys:
+              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDvmW6ffQqbp9Nuj0l6EJFrMbF+2PH8hYRnwhQOHo+ZBnz8Mrfr1g73FluBEpkIX/1GaQ0moH8QJfvE/tjKU0w6tEDJMRGsoN4r14CYITQ6sP4uNWXDFrLCWM5KDTKkrDSPLH1Xm5QuXD1HfxvGCk4g9VoWLyITWAmbXl7gHq7PkSLY8jZDJu1OfdZF+FJd7+CJhguKTBGoTAqURQrDil6j37bV6K11AclpFul2cJZe4lnbRLrTefbKeBI0YrwgdmIWNCVJDJA7jtEKRjaDK6HIyibUwUztbvfy5RNpvIYxR9F+D9iZwUH3pdxTVS08+HLHCJ0fE3EV3lVhdPXbQNCzOxuUMAjvUoPx/L4N+eYbQC2c9yY9cu6xJIxnoinym/GsEtXmqvKeCl84H2qAdZVPCjd6M1Fc7Yul+i7wjHAo6qB58khW41FBFSTZcOou4UBQ48KKVGiqAPmSz5SPZPXz89G3aW6Fz4Kj3GeIqaQUnz2oqt97SNHyknQocE5LRic= opc@oci-tutorials-env
+              packages:
+              - nginx
