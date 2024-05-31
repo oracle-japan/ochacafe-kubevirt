@@ -1,7 +1,7 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: alpine-vm
+  name: ocha-vm
 spec:
   running: true
   instancetype:
@@ -12,7 +12,7 @@ spec:
     name: alpine
   dataVolumeTemplates:
     - metadata:
-        name: alpine-dv
+        name: ocha-dv
       spec:
         pvc:
           accessModes:
@@ -26,7 +26,7 @@ spec:
   template:
     metadata:
       labels:
-        kubevirt.io/domain: alpine-vm
+        kubevirt.io/domain: ocha-vms
     spec:
       domain:
         devices:
@@ -51,7 +51,7 @@ spec:
         timeoutSeconds: 10
       volumes:
         - persistentVolumeClaim:
-            claimName: alpine-dv
+            claimName: ocha-dv
           name: datavolumedisk
         - name: cloudinitdisk
           cloudInitNoCloud:
@@ -61,6 +61,6 @@ spec:
               ssh_pwauth: True
               disable_root: false
               ssh_authorized_keys:
-              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDvmW6ffQqbp9Nuj0l6EJFrMbF+2PH8hYRnwhQOHo+ZBnz8Mrfr1g73FluBEpkIX/1GaQ0moH8QJfvE/tjKU0w6tEDJMRGsoN4r14CYITQ6sP4uNWXDFrLCWM5KDTKkrDSPLH1Xm5QuXD1HfxvGCk4g9VoWLyITWAmbXl7gHq7PkSLY8jZDJu1OfdZF+FJd7+CJhguKTBGoTAqURQrDil6j37bV6K11AclpFul2cJZe4lnbRLrTefbKeBI0YrwgdmIWNCVJDJA7jtEKRjaDK6HIyibUwUztbvfy5RNpvIYxR9F+D9iZwUH3pdxTVS08+HLHCJ0fE3EV3lVhdPXbQNCzOxuUMAjvUoPx/L4N+eYbQC2c9yY9cu6xJIxnoinym/GsEtXmqvKeCl84H2qAdZVPCjd6M1Fc7Yul+i7wjHAo6qB58khW41FBFSTZcOou4UBQ48KKVGiqAPmSz5SPZPXz89G3aW6Fz4Kj3GeIqaQUnz2oqt97SNHyknQocE5LRic= opc@oci-tutorials-env
+              - ssh-rsa YOUR_SSH_PUB_KEY_HERE
               packages:
               - nginx
