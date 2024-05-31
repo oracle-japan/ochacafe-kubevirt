@@ -191,7 +191,7 @@ kubectl apply -f vms/vm_demo.yaml
 ### SSH接続用Seriviceの作成
 
 ```sh
-virtctl expose vm ocha-vm --name=ocha-ssh --port=20222 --target-port=22 --type=NodePort
+virtctl expose vm ocha-vm --name=ocha-ssh --port=20222 --target-port=22 --type=LoadBalancer
 ```
 
 アサインされているパブリックIPを確認
@@ -201,8 +201,97 @@ kubect get svc ocha-ssh
 ```
 
 ```sh
-ssh -i private.pem ubuntu@xxx.xxx.xxx.xxx
+ssh -i private.pem ubuntu@xxx.xxx.xxx.xxx -p 20222
 ```
+
+### ヘルスチェックの確認
+
+```sh
+sudo systemctl stop nginx
+```
+
+```sh
+$ kubectl get vm -w
+NAME      AGE   STATUS    READY
+ocha-vm   28m   Running   True
+ocha-vm   29m   Stopped   True
+ocha-vm   29m   Stopped   False
+ocha-vm   29m   Starting   False
+ocha-vm   29m   Starting   False
+ocha-vm   29m   Starting   False
+ocha-vm   29m   Starting   False
+ocha-vm   29m   Starting   False
+ocha-vm   29m   Running    False
+ocha-vm   29m   Running    True
+```
+
+## 実践！！KubeVirtのデモ - LiveMigration - (minikube)
+
+### minikubeへの切り替え
+
+[kubectx](https://github.com/ahmetb/kubectx)をインストール
+
+```sh
+kubectx minikube
+```
+
+### VMの作成
+
+```sh
+kubectl apply -f vms/simple_demo.yaml
+```
+
+### Live Migration
+
+SSH接続後にバックグラウンドで8080番ポートでhttp接続受付
+
+```sh
+virtctl console testvm
+```
+
+```sh
+while true; do ( echo "HTTP/1.0 200 Ok"; echo; echo "Migration test" ) | nc -l -p 8080; done &
+```
+
+別ターミナルでtestvmに対してhttp pingを送信
+
+```sh
+./script/ping.sh 
+```
+
+Migrate
+
+```sh
+virtctl migrate testvm
+```
+
+Pod(VM)のMigrate状態を観察
+
+```sh
+$ kuebctl get pods -o -w
+NAME                         READY   STATUS      RESTARTS   AGE     IP            NODE           NOMINATED NODE   READINESS GATES
+virt-launcher-testvm-2t4bn   3/3     Running     0          12s     10.244.1.21   minikube-m02   <none>           1/1
+virt-launcher-testvm-zp99b   0/3     Init:0/2    0          1s      <none>        minikube       <none>           0/1
+virt-launcher-testvm-zp99b   0/3     Init:1/2    0          2s      10.244.0.18   minikube       <none>           0/1
+virt-launcher-testvm-zp99b   0/3     PodInitializing   0          3s      10.244.0.18   minikube       <none>           0/1
+virt-launcher-testvm-zp99b   3/3     Running           0          4s      10.244.0.18   minikube       <none>           0/1
+virt-launcher-testvm-zp99b   3/3     Running           0          6s      10.244.0.18   minikube       <none>           0/1
+virt-launcher-testvm-zp99b   3/3     Running           0          6s      10.244.0.18   minikube       <none>           1/1
+virt-launcher-testvm-zp99b   3/3     Running           0          6s      10.244.0.18   minikube       <none>           1/1
+virt-launcher-testvm-zp99b   3/3     Running           0          7s      10.244.0.18   minikube       <none>           1/1
+virt-launcher-testvm-2t4bn   2/3     NotReady          0          18s     10.244.1.21   minikube-m02   <none>           1/1
+virt-launcher-testvm-2t4bn   1/3     NotReady          0          19s     10.244.1.21   minikube-m02   <none>           1/1
+virt-launcher-testvm-2t4bn   0/3     Completed         0          20s     10.244.1.21   minikube-m02   <none>           1/1
+virt-launcher-testvm-2t4bn   0/3     Completed         0          21s     <none>        minikube-m02   <none>           1/1
+virt-launcher-testvm-2t4bn   0/3     Completed         0          22s     10.244.1.21   minikube-m02   <none>           1/1
+```
+
+Migrate中でもその前後でもhttp pingが通ることを確認
+
+
+
+
+
 
 
 

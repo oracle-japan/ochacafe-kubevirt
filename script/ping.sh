@@ -1,2 +1,4 @@
 #!/bin/bash
-while true; do ( echo "HTTP/1.0 200 Ok"; echo; echo "Migration test" ) | nc -l -p 8080; done
+IP=$(minikube ip)
+PORT=$(kubectl get svc testvm-http -o jsonpath='{.spec.ports[0].nodePort}')
+while true; do curl ${IP}:${PORT} ;sleep 2s; done
