@@ -122,6 +122,18 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snaps
 kubectl apply -f prepare/snapshot.yaml
 ```
 
+#### CDI(Containerized Data Importer)のインストール
+
+```sh
+export TAG=$(curl -s -w %{redirect_url} https://github.com/kubevirt/containerized-data-importer/releases/latest)
+export VERSION=$(echo ${TAG##*/})
+```
+
+```sh
+kubectl apply -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-operator.yaml
+kubectl apply -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-cr.yaml
+```
+
 #### minikubeのみ
 
 ##### VolumeSnapshotClass(NFS CSI Driver)のインストール
