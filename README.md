@@ -268,10 +268,15 @@ while true; do ( echo "HTTP/1.0 200 Ok"; echo; echo "Migration test" ) | nc -l -
 別ターミナルでtestvmに対してhttp pingを送信
 
 ```sh
-./script/ping.sh 
+IP=$(minikube ip)
+PORT=$(kubectl get svc testvm-http -o jsonpath='{.spec.ports[0].nodePort}')
 ```
 
-Migrate
+```sh
+curl ${IP}:${PORT}
+```
+
+Migrateを実行
 
 ```sh
 virtctl migrate testvm
@@ -298,28 +303,8 @@ virt-launcher-testvm-2t4bn   0/3     Completed         0          21s     <none>
 virt-launcher-testvm-2t4bn   0/3     Completed         0          22s     10.244.1.21   minikube-m02   <none>           1/1
 ```
 
-Migrate中でもその前後でもhttp pingが通ることを確認
+Migrate後でもhttp pingが通ることを確認
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```sh
+curl ${IP}:${PORT}
+```
