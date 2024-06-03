@@ -265,6 +265,12 @@ virtctl console testvm
 while true; do ( echo "HTTP/1.0 200 Ok"; echo; echo "Migration test" ) | nc -l -p 8080; done &
 ```
 
+NodePortで8080ポートを公開
+
+```sh
+virtctl expose vmi testvm --name=testvm-http --port=8080 --type=NodePort
+```
+
 別ターミナルでtestvmに対してhttp pingを送信
 
 ```sh
