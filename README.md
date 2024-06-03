@@ -169,6 +169,10 @@ kubectl apply -f vms/simple_demo.yaml
 ```
 
 ```sh
+virtctl start testvm
+```
+
+```sh
 virtctl console testvm
 ```
 
