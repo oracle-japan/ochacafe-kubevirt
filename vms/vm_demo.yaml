@@ -62,4 +62,5 @@ spec:
               disable_root: false
               ssh_authorized_keys:
               - ssh-rsa YOUR_SSH_PUB_KEY_HERE
+              packages:
               - nginx
